@@ -1,35 +1,34 @@
-from kivy.app import App
-from kivy.uix.label import Label
-from kivy.uix.button import Button
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.filechooser import FileChooserListView
-from kivy.uix.popup import Popup
+import tkinter as tk
+from tkinter import filedialog, messagebox
 from PyPDF2 import PdfReader, PdfWriter
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
-from kivy.clock import Clock
 import io
 
-class PdfFligApp(App):
-    def __init__(self, **kwargs):
-        super(PdfFligApp, self).__init__(**kwargs)
-        self.file_chooser = FileChooserListView()
-        self.file_chooser.bind(on_submit=self.on_file_selected)
-        self.popup = Popup(title='Select a PDF file', content=self.file_chooser, size_hint=(0.9, 0.9))
-        self.watermarked_pdf_path = None
-        self.show_popup = None
+class PdfFligApp:
+    def __init__(self, master):
+        self.master = master
+        master.title("PDF Flig")
+        master.geometry("600x400")  # Pencere boyutu: genişlik x yükseklik
 
-    def pdf_sec(self, instance):
-        self.popup.open()
+        self.selected_pdf_path = None
 
-    def on_file_selected(self, instance, selection, touch):
-        if selection:
-            print(f"Selected file: {selection[0]}")
-            self.selected_pdf_path = selection[0]
-        self.popup.dismiss()
+        self.label = tk.Label(master, text="Pdf Flig", font=("Helvetica", 24))
+        self.label.pack(pady=10)
 
-    def kashele(self, instance):
-        if hasattr(self, 'selected_pdf_path'):
+        self.pdf_sec_button = tk.Button(master, text="PDF Seç", font=("Helvetica", 18), command=self.pdf_sec)
+        self.pdf_sec_button.pack(pady=10)
+
+        self.kashele_button = tk.Button(master, text="Kaşele", font=("Helvetica", 18), command=self.kashele)
+        self.kashele_button.pack(pady=10)
+
+    def pdf_sec(self):
+        self.selected_pdf_path = filedialog.askopenfilename(defaultextension=".pdf", filetypes=[("PDF files", "*.pdf")])
+        if self.selected_pdf_path:
+            messagebox.showinfo("Bilgi", f"Seçilen dosya: {self.selected_pdf_path}")
+
+    def kashele(self):
+        if self.selected_pdf_path:
             output_pdf_path = self.selected_pdf_path.replace('.pdf', '_watermarked.pdf')
 
             watermark_path = 'kaşe.png'  # Bu dosyanın mevcut çalışma klasöründe olduğunu varsayalım
@@ -40,8 +39,8 @@ class PdfFligApp(App):
             # Sağ alt köşede resmi yerleştir
             image_width, image_height = 50, 50  # Resim boyutu
             page_width, page_height = letter
-            x = page_width - image_width - 20 # 100 piksel kenar bırak
-            y = 0  # 100 piksel kenar bırak
+            x = page_width - image_width - 20  # 20 piksel kenar bırak
+            y = 0  # 0 piksel kenar bırak
 
             # Resmi sağ alt köşeye yerleştir
             can.drawImage(watermark_path, x, y, width=image_width, height=image_height)
@@ -62,38 +61,12 @@ class PdfFligApp(App):
             with open(output_pdf_path, 'wb') as output_file:
                 output_pdf.write(output_file)
 
-            print(f"Watermarked PDF saved at: {output_pdf_path}")
-            self.watermarked_pdf_path = output_pdf_path
-
-            # Kaşeleme işlemi tamamlandı mesajını göstermek için Popup penceresi
-            self.show_popup = Popup(title='Kaşeleme Tamamlandı', content=Label(text='Kaşeleme işlemi tamamlandı!'),
-                                   size_hint=(None, None), size=(400, 200))
-            self.show_popup.open()
-
-            # Pencerenin otomatik kapanması için bir zamanlayıcı ekleyin
-            Clock.schedule_once(lambda dt: self.show_popup.dismiss(), 3)  # 3 saniye sonra kapat
-
+            messagebox.showinfo("Bilgi", f"Kaşelenmiş PDF dosyası kaydedildi: {output_pdf_path}")
         else:
-            print("Lütfen önce bir PDF dosyası seçin.")
-
-    def build(self):
-        layout = BoxLayout(orientation='vertical')
-
-        # Pdf Flig yazısını daha büyük yap
-        label = Label(text="Pdf Flig", font_size=50)
-
-        pdf_sec_button = Button(text="PDF Seç", font_size=40)
-        kashele_button = Button(text="Kaşele", font_size=40)
-
-        pdf_sec_button.bind(on_press=self.pdf_sec)
-        kashele_button.bind(on_press=self.kashele)
-
-        layout.add_widget(label)
-        layout.add_widget(pdf_sec_button)
-        layout.add_widget(kashele_button)
-
-        return layout
+            messagebox.showwarning("Uyarı", "Lütfen önce bir PDF dosyası seçin.")
 
 
-if __name__ == '__main__':
-    PdfFligApp().run()
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = PdfFligApp(root)
+    root.mainloop()
