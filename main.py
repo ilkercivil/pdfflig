@@ -7,9 +7,8 @@ from kivy.uix.popup import Popup
 from PyPDF2 import PdfReader, PdfWriter
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
-import io
 from kivy.clock import Clock
-
+import io
 
 class PdfFligApp(App):
     def __init__(self, **kwargs):
@@ -39,10 +38,12 @@ class PdfFligApp(App):
             can = canvas.Canvas(packet, pagesize=letter)
 
             # Sağ alt köşede resmi yerleştir
-            image_width, image_height = 100, 100  # Resim boyutu
+            image_width, image_height = 50, 50  # Resim boyutu
             page_width, page_height = letter
-            x = page_width - image_width - 100  # 100 piksel kenar bırak
-            y = 100  # 100 piksel kenar bırak
+            x = page_width - image_width - 20 # 100 piksel kenar bırak
+            y = 0  # 100 piksel kenar bırak
+
+            # Resmi sağ alt köşeye yerleştir
             can.drawImage(watermark_path, x, y, width=image_width, height=image_height)
 
             can.save()
