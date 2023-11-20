@@ -33,17 +33,20 @@ class PdfFligApp:
 
             watermark_path = 'kaşe.png'  # Bu dosyanın mevcut çalışma klasöründe olduğunu varsayalım
 
-            packet = io.BytesIO()
+            with open(watermark_path, 'rb') as watermark_file:
+                watermark_bytes = watermark_file.read()
+
+            packet = io.BytesIO(watermark_bytes)
             can = canvas.Canvas(packet, pagesize=letter)
 
-            # Sağ alt köşede resmi yerleştir
-            image_width, image_height = 50, 50  # Resim boyutu
+            # Resmi sağ alt köşede konumlandır
+            image_width, image_height = 80, 80  # Resim boyutu
             page_width, page_height = letter
             x = page_width - image_width - 20  # 20 piksel kenar bırak
             y = 0  # 0 piksel kenar bırak
 
-            # Resmi sağ alt köşeye yerleştir
-            can.drawImage(watermark_path, x, y, width=image_width, height=image_height)
+            # Resmi sağ alt köşeye yerleştir, arka planı beyaz değil, şeffaf yap
+            can.drawImage(watermark_path, x, y, width=image_width, height=image_height, mask='auto')
 
             can.save()
 
@@ -64,7 +67,6 @@ class PdfFligApp:
             messagebox.showinfo("Bilgi", f"Kaşelenmiş PDF dosyası kaydedildi: {output_pdf_path}")
         else:
             messagebox.showwarning("Uyarı", "Lütfen önce bir PDF dosyası seçin.")
-
 
 if __name__ == "__main__":
     root = tk.Tk()
